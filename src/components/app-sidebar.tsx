@@ -19,6 +19,7 @@ import {
 import {
   Headphones,
   Music,
+  Users,
   Sparkles,
   Brain,
   Palette,
@@ -32,6 +33,7 @@ const navItems = [
   { title: "Главная", href: "/", icon: LayoutDashboard },
   { title: "Медитации", href: "/meditations", icon: Headphones },
   { title: "Музыка", href: "/music", icon: Music },
+  { title: "Клубы", href: "/clubs", icon: Users },
   { title: "Аффирмации", href: "/affirmations", icon: Sparkles },
   { title: "Программы", href: "/programs", icon: Brain },
   { title: "Сферы жизни", href: "/life-areas", icon: Palette },

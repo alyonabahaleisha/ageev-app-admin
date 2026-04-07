@@ -157,8 +157,8 @@ async function getDownloadUrl(storagePath: string): Promise<string> {
 async function migrateMusic() {
   console.log("\n[MUSIC] Phase 1: Upload music audio files\n");
   let uploaded = 0,
-    skipped = 0,
     failed = 0;
+  const skipped = 0;
 
   for (const [localName, storageName] of Object.entries(musicFileMap)) {
     const localPath = resolve(MUSIC_DIR, localName);
@@ -196,8 +196,8 @@ async function migrateMusic() {
 async function migrateImages() {
   console.log("\n[IMAGES] Phase 2: Upload meditation cover images\n");
   let uploaded = 0,
-    skipped = 0,
     failed = 0;
+  const skipped = 0;
 
   // Upload unique images and collect URLs
   const imageUrls: Record<string, string> = {};

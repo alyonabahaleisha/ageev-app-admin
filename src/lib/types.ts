@@ -57,6 +57,16 @@ export interface ProgramsDoc {
   pairs: ProgramPair[];
 }
 
+export interface ClubDoc {
+  id: string;
+  country: string;
+  city: string;
+  leader: string;
+  telegramUrl: string;
+  region: "abroad" | "russia";
+  sortOrder: number;
+}
+
 export const AREA_LABELS: Record<LifeArea, string> = {
   money: "Деньги 💰",
   confidence: "Уверенность ✨",
