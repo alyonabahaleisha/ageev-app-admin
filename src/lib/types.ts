@@ -34,6 +34,19 @@ export interface MeditationDoc {
   coverColor?: string;
 }
 
+export interface WebinarDoc {
+  id: string;
+  title: string;
+  description: string;
+  fileName: string;
+  durationSeconds: number;
+  audioUrl: string;
+  coverUrl: string;
+  sortOrder: number;
+  popular?: boolean;
+  coverColor?: string;
+}
+
 export interface MusicTrackDoc {
   id: string;
   title: string;
@@ -78,4 +91,88 @@ export const AREA_LABELS: Record<LifeArea, string> = {
   selfWorth: "Самоценность 👑",
   fear: "Страх 🦋",
   body: "Тело 🌿",
+};
+
+export const MINDSET_STATES = [
+  "self_awareness",
+  "wellbeing",
+  "relationships_family",
+  "purpose",
+  "money_abundance",
+  "new_level",
+  "anxiety_fears",
+  "energy_development",
+  "resource_state",
+  "creator_angels",
+] as const;
+
+export type MindsetStateId = (typeof MINDSET_STATES)[number];
+
+/** One screen of the guided exercise flow (a step, or a recommendation). */
+export interface ExerciseStep {
+  title: string;
+  body: string;
+}
+
+/**
+ * "Упражнение дня" — a guided multi-screen flow: an intro card, a sequence of
+ * `steps` (Назад/Далее), then a final `recommendations` screen.
+ */
+export interface MindsetStateExercise {
+  title: string;
+  durationText: string;
+  /** Short subtitle shown on the compact card (e.g. "Практика для опоры."). */
+  description: string;
+  /** Long intro paragraph shown on the flow's first screen. */
+  intro: string;
+  /** Contained image on the intro screen (falls back to the state cover). */
+  image: string;
+  /** Full-bleed background photo for the step/recommendation screens. */
+  stepsBackground: string;
+  steps: ExerciseStep[];
+  recommendations: ExerciseStep[];
+}
+
+/** A free-form linked webinar/meditation (e.g. a YouTube live URL). */
+export interface MindsetStateLink {
+  title: string;
+  url: string;
+  /** Optional cover image; falls back to the YouTube thumbnail in the app. */
+  image?: string;
+}
+
+export interface MindsetStateDoc {
+  title: string;
+  subtitle: string;
+  emoji: string;
+  coverImage: string;
+  sortOrder: number;
+  exercise: MindsetStateExercise;
+  affirmations: string[];
+  /** Background image behind the affirmation cards & flow. */
+  affirmationsBackground: string;
+  /** Spiritual breakfast audio hosted on Firebase Storage. */
+  breakfastTitle: string;
+  breakfastUrl: string;
+  /** Spiritual breakfast / music track id (catalog, optional). */
+  audioId: string;
+  /** Linked meditation doc ids (catalog). */
+  meditationIds: string[];
+  /** Linked webinar doc ids (catalog). */
+  webinarIds: string[];
+  /** External webinar/meditation links (title + url). */
+  externalLinks: MindsetStateLink[];
+}
+
+export const MINDSET_STATE_LABELS: Record<MindsetStateId, string> = {
+  self_awareness: "Самосознание, развитие уверенности",
+  wellbeing: "Самочувствие, здоровье",
+  relationships_family: "Отношения, семья, род",
+  purpose: "Призвание, реализация",
+  money_abundance: "Деньги и изобилие",
+  new_level: "Новый уровень жизни",
+  anxiety_fears: "Тревога и страхи",
+  energy_development: "Энергетическое развитие, активация способностей",
+  resource_state: "Ресурсное состояние",
+  creator_angels: "Связь с Творцом и Ангелами",
 };
