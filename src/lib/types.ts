@@ -133,6 +133,14 @@ export interface MindsetStateExercise {
   recommendations: ExerciseStep[];
 }
 
+/** A single affirmation card. Background is optional; falls back to the
+ *  shared affirmationsBackground, then the state cover. */
+export interface MindsetAffirmation {
+  text: string;
+  /** Optional per-card background image. */
+  background?: string;
+}
+
 /** A free-form linked webinar/meditation (e.g. a YouTube live URL). */
 export interface MindsetStateLink {
   title: string;
@@ -148,8 +156,8 @@ export interface MindsetStateDoc {
   coverImage: string;
   sortOrder: number;
   exercise: MindsetStateExercise;
-  affirmations: string[];
-  /** Background image behind the affirmation cards & flow. */
+  affirmations: MindsetAffirmation[];
+  /** Default background behind the affirmation cards & flow (per-card override possible). */
   affirmationsBackground: string;
   /** Spiritual breakfast audio hosted on Firebase Storage. */
   breakfastTitle: string;

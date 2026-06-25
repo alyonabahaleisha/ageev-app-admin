@@ -16,6 +16,7 @@ import {
   MindsetStateDoc,
   MindsetStateExercise,
   MindsetStateLink,
+  MindsetAffirmation,
   ExerciseStep,
   MeditationDoc,
   MusicTrackDoc,
@@ -35,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Save, Plus, X, Trash2 } from "lucide-react";
+import { ImageUploadField } from "@/components/image-upload-field";
 
 const EMPTY_EXERCISE: MindsetStateExercise = {
   title: "",
@@ -102,7 +104,16 @@ function normalizeState(raw: Record<string, unknown>): MindsetStateDoc {
           : [],
       recommendations: exercise.recommendations || [],
     },
-    affirmations: (raw.affirmations as string[]) || [],
+    affirmations: Array.isArray(raw.affirmations)
+      ? (raw.affirmations as unknown[]).map((a) =>
+          typeof a === "string"
+            ? { text: a }
+            : {
+                text: ((a as MindsetAffirmation)?.text as string) || "",
+                background: (a as MindsetAffirmation)?.background || "",
+              }
+        )
+      : [],
     affirmationsBackground: (raw.affirmationsBackground as string) || "",
     breakfastTitle: (raw.breakfastTitle as string) || "",
     breakfastUrl: (raw.breakfastUrl as string) || "",
@@ -292,12 +303,18 @@ export default function MindsetPage() {
 
   function updateAffirmation(index: number, value: string) {
     const next = [...data.affirmations];
-    next[index] = value;
+    next[index] = { ...next[index], text: value };
+    updateField("affirmations", next);
+  }
+
+  function updateAffirmationBg(index: number, url: string) {
+    const next = [...data.affirmations];
+    next[index] = { ...next[index], background: url };
     updateField("affirmations", next);
   }
 
   function addAffirmation() {
-    updateField("affirmations", [...data.affirmations, ""]);
+    updateField("affirmations", [...data.affirmations, { text: "" }]);
   }
 
   function removeAffirmation(index: number) {
@@ -312,7 +329,12 @@ export default function MindsetPage() {
     try {
       const saveData: MindsetStateDoc = {
         ...data,
-        affirmations: data.affirmations.filter((t) => t.trim()),
+        affirmations: data.affirmations
+          .filter((a) => a.text.trim())
+          .map((a) => ({
+            text: a.text,
+            ...(a.background ? { background: a.background } : {}),
+          })),
         externalLinks: data.externalLinks.filter((l) => l.url.trim()),
       };
       await setDoc(doc(db, "mindsetStates", selectedState), saveData);
@@ -444,24 +466,12 @@ export default function MindsetPage() {
                   placeholder="Укрепите внутреннюю опору, доверие к себе..."
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Обложка (URL)</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={data.coverImage}
-                    onChange={(e) => updateField("coverImage", e.target.value)}
-                    placeholder="https://..."
-                  />
-                  {data.coverImage && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={data.coverImage}
-                      alt="cover"
-                      className="w-12 h-12 rounded object-cover shrink-0"
-                    />
-                  )}
-                </div>
-              </div>
+              <ImageUploadField
+                label="Обложка"
+                value={data.coverImage}
+                onChange={(url) => updateField("coverImage", url)}
+                folder="mindset/covers"
+              />
             </CardContent>
           </Card>
 
@@ -512,28 +522,20 @@ export default function MindsetPage() {
                   placeholder="То, как вы определяете себя в начале дня..."
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">
-                  Картинка на стартовом экране (URL)
-                </Label>
-                <Input
-                  value={data.exercise.image}
-                  onChange={(e) => updateExercise("image", e.target.value)}
-                  placeholder="https://... (по умолчанию — обложка состояния)"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">
-                  Фон экранов с шагами (URL)
-                </Label>
-                <Input
-                  value={data.exercise.stepsBackground}
-                  onChange={(e) =>
-                    updateExercise("stepsBackground", e.target.value)
-                  }
-                  placeholder="https://... (фото на весь экран за шагами)"
-                />
-              </div>
+              <ImageUploadField
+                label="Картинка на стартовом экране"
+                value={data.exercise.image}
+                onChange={(url) => updateExercise("image", url)}
+                hint="По умолчанию — обложка состояния"
+                folder="mindset/exercise"
+              />
+              <ImageUploadField
+                label="Фон экранов с шагами"
+                value={data.exercise.stepsBackground}
+                onChange={(url) => updateExercise("stepsBackground", url)}
+                hint="Фото на весь экран за шагами"
+                folder="mindset/exercise"
+              />
 
               {/* Steps */}
               <div className="space-y-3 pt-2">
@@ -652,45 +654,43 @@ export default function MindsetPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Фон карточек аффирмаций (URL)</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={data.affirmationsBackground}
-                    onChange={(e) =>
-                      updateField("affirmationsBackground", e.target.value)
-                    }
-                    placeholder="https://... (по умолчанию — обложка состояния)"
-                  />
-                  {data.affirmationsBackground && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={data.affirmationsBackground}
-                      alt="bg"
-                      className="w-12 h-12 rounded object-cover shrink-0"
+              <ImageUploadField
+                label="Фон карточек аффирмаций"
+                value={data.affirmationsBackground}
+                onChange={(url) => updateField("affirmationsBackground", url)}
+                hint="По умолчанию — обложка состояния"
+                folder="mindset/affirmations"
+              />
+              {data.affirmations.map((aff, i) => (
+                <div key={i} className="rounded-md border p-3 space-y-2">
+                  <div className="flex gap-2 items-start">
+                    <span className="text-xs text-muted-foreground pt-2 w-6 shrink-0">
+                      {i + 1}.
+                    </span>
+                    <Textarea
+                      value={aff.text}
+                      onChange={(e) => updateAffirmation(i, e.target.value)}
+                      rows={2}
+                      className="flex-1"
                     />
-                  )}
-                </div>
-              </div>
-              {data.affirmations.map((text, i) => (
-                <div key={i} className="flex gap-2 items-start">
-                  <span className="text-xs text-muted-foreground pt-2 w-6 shrink-0">
-                    {i + 1}.
-                  </span>
-                  <Textarea
-                    value={text}
-                    onChange={(e) => updateAffirmation(i, e.target.value)}
-                    rows={2}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeAffirmation(i)}
-                    className="shrink-0"
-                  >
-                    <X className="size-4" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeAffirmation(i)}
+                      className="shrink-0"
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                  <div className="pl-8">
+                    <ImageUploadField
+                      label="Фон карточки"
+                      value={aff.background || ""}
+                      onChange={(url) => updateAffirmationBg(i, url)}
+                      hint="По умолчанию — общий фон аффирмаций"
+                      folder="mindset/affirmations"
+                    />
+                  </div>
                 </div>
               ))}
               <Button
@@ -728,10 +728,11 @@ export default function MindsetPage() {
                         onChange={(e) => updateLink(i, "url", e.target.value)}
                         placeholder="https://..."
                       />
-                      <Input
+                      <ImageUploadField
                         value={link.image || ""}
-                        onChange={(e) => updateLink(i, "image", e.target.value)}
-                        placeholder="Обложка (URL, необязательно)"
+                        onChange={(url) => updateLink(i, "image", url)}
+                        hint="Обложка (необязательно)"
+                        folder="mindset/links"
                       />
                     </div>
                     <Button
