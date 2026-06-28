@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Headphones,
-  Music,
   Users,
   Sparkles,
   Brain,
@@ -26,16 +25,19 @@ import {
   Type,
   LayoutDashboard,
   LogOut,
+  Video,
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { title: "Главная", href: "/", icon: LayoutDashboard },
   { title: "Медитации", href: "/meditations", icon: Headphones },
-  { title: "Музыка", href: "/music", icon: Music },
+  { title: "Вебинары", href: "/webinars", icon: Video },
   { title: "Клубы", href: "/clubs", icon: Users },
   { title: "Аффирмации", href: "/affirmations", icon: Sparkles },
-  { title: "Программы", href: "/programs", icon: Brain },
+  { title: "Мышление", href: "/mindset", icon: Brain },
+  { title: "Сторис", href: "/stories", icon: CalendarDays },
   { title: "Сферы жизни", href: "/life-areas", icon: Palette },
   { title: "UI тексты", href: "/ui-strings", icon: Type },
 ];

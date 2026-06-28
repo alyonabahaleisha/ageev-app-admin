@@ -80,6 +80,63 @@ export interface ClubDoc {
   sortOrder: number;
 }
 
+// ── Daily Stories (Сторис) ───────────────────────────────────────────────────
+// Content pools the admin curates once, then schedules per calendar day.
+
+/** Reel 1 image: a photo of Mikhail. */
+export interface StoryPhotoDoc {
+  id: string;
+  /** Optional admin label to tell photos apart. */
+  title: string;
+  imageUrl: string;
+  sortOrder: number;
+}
+
+/** Reel 1 text: a quote shown over the photo. */
+export interface StoryQuoteDoc {
+  id: string;
+  text: string;
+  author: string;
+  sortOrder: number;
+}
+
+/** Reel 2: "Духовный завтрак" — an audio practice, modeled like a meditation. */
+export interface BreakfastDoc {
+  id: string;
+  title: string;
+  /** Prompt text shown on the story (e.g. "Кто ты сегодня?"). */
+  description: string;
+  fileName: string;
+  durationSeconds: number;
+  audioUrl: string;
+  /** Full-bleed background image for the story. */
+  coverUrl: string;
+  sortOrder: number;
+}
+
+/** Reel 3: a daily affirmation with its own background. */
+export interface StoryAffirmationDoc {
+  id: string;
+  text: string;
+  background: string;
+  sortOrder: number;
+}
+
+/** One scheduled day. Document id is the date, "YYYY-MM-DD". */
+export interface DailyStoryDoc {
+  date: string;
+  /** Reel 1 = photo + quote. */
+  photoId: string;
+  quoteId: string;
+  /** Reel 2 = breakfast audio. */
+  breakfastId: string;
+  /** Reel 3 = a story-affirmation pool item (has its own background). */
+  affirmationId: string;
+  /** Reel 3 alternative = an inline affirmation text chosen from the app's
+   *  existing affirmations library (no per-item background). */
+  affirmationText?: string;
+}
+
 export const AREA_LABELS: Record<LifeArea, string> = {
   money: "Деньги 💰",
   confidence: "Уверенность ✨",
