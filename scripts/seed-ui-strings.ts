@@ -66,7 +66,7 @@ const DEFAULTS: Record<string, string> = {
   practices_format_meditations: "Медитации",
   practices_format_affirmations: "Аффирмации",
   practices_format_webinars: "Вебинары",
-  practices_format_music: "Музыка",
+  practices_format_breakfasts: "Духовные завтраки",
 
   // Медитации
   meditations_title: "Медитации",
@@ -75,6 +75,13 @@ const DEFAULTS: Record<string, string> = {
 
   // Вебинары
   webinars_title: "Вебинары",
+  webinars_filters:
+    "Все, Короткие, Длинные, Спокойствие, Тревога, Любовь, Энергия, Изобилие, Уверенность, Принятие",
+
+  // Духовные завтраки
+  breakfasts_title: "Духовные завтраки",
+  breakfasts_filters:
+    "Все, Короткие, Длинные, Спокойствие, Тревога, Любовь, Энергия, Изобилие, Уверенность, Принятие",
 
   // Аффирмации
   affirmations_title: "Аффирмации",
