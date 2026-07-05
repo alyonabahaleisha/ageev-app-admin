@@ -54,6 +54,9 @@ const musicFileMap: Record<string, string> = {
   "Пропитка 180 минут.mp3": "propitka_180.mp3",
   "Clifford White - A Blessing.mp3": "a_blessing.mp3",
   "Clifford White - Sanctuary.mp3": "sanctuary.mp3",
+  "zen_wind.mp3": "zen_wind.mp3",
+  "breath_of_renewal.mp3": "breath_of_renewal.mp3",
+  "relax.mp3": "relax.mp3",
 };
 
 // Music storage filename → Firestore doc ID
@@ -61,6 +64,9 @@ const musicDocMap: Record<string, string> = {
   "propitka_180.mp3": "propitka_180",
   "a_blessing.mp3": "a_blessing",
   "sanctuary.mp3": "sanctuary",
+  "zen_wind.mp3": "zen_wind",
+  "breath_of_renewal.mp3": "breath_of_renewal",
+  "relax.mp3": "relax",
 };
 
 // Meditation ID → cover image filename

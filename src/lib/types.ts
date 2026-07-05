@@ -45,6 +45,8 @@ export interface WebinarDoc {
   sortOrder: number;
   popular?: boolean;
   coverColor?: string;
+  /** Optional life-area assignment (managed from the life-areas page). */
+  area?: string;
 }
 
 export interface MusicTrackDoc {
@@ -112,6 +114,8 @@ export interface BreakfastDoc {
   /** Full-bleed background image for the story. */
   coverUrl: string;
   sortOrder: number;
+  /** Optional life-area assignment (managed from the life-areas page). */
+  area?: string;
 }
 
 /** Reel 3: a daily affirmation with its own background. */

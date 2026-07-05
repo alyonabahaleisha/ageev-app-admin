@@ -8,6 +8,8 @@ import {
   deleteDoc,
   collection,
   getDocs,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import {
@@ -19,7 +21,7 @@ import {
   MindsetAffirmation,
   ExerciseStep,
   MeditationDoc,
-  MusicTrackDoc,
+  BreakfastDoc,
   WebinarDoc,
 } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -138,14 +140,14 @@ export default function MindsetPage() {
 
   const [meditations, setMeditations] = useState<MeditationDoc[]>([]);
   const [webinars, setWebinars] = useState<WebinarDoc[]>([]);
-  const [musicTracks, setMusicTracks] = useState<MusicTrackDoc[]>([]);
+  const [breakfasts, setBreakfasts] = useState<BreakfastDoc[]>([]);
 
   useEffect(() => {
     async function loadCatalog() {
-      const [medSnap, webSnap, musicSnap, statesSnap] = await Promise.all([
+      const [medSnap, webSnap, bfSnap, statesSnap] = await Promise.all([
         getDocs(collection(db, "meditations")),
         getDocs(collection(db, "webinars")),
-        getDocs(collection(db, "musicTracks")),
+        getDocs(query(collection(db, "breakfasts"), orderBy("sortOrder"))),
         getDocs(collection(db, "mindsetStates")),
       ]);
       setMeditations(
@@ -154,8 +156,8 @@ export default function MindsetPage() {
       setWebinars(
         webSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as WebinarDoc)
       );
-      setMusicTracks(
-        musicSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as MusicTrackDoc)
+      setBreakfasts(
+        bfSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as BreakfastDoc)
       );
 
       const entries: StateEntry[] = statesSnap.docs.map((d) => {
@@ -801,7 +803,7 @@ export default function MindsetPage() {
 
               <div className="space-y-2">
                 <Label className="text-xs">
-                  Духовный завтрак (аудио по URL)
+                  Духовный завтрак (название)
                 </Label>
                 <Input
                   value={data.breakfastTitle}
@@ -810,30 +812,43 @@ export default function MindsetPage() {
                   }
                   placeholder="Название завтрака"
                 />
-                <Input
-                  value={data.breakfastUrl}
-                  onChange={(e) => updateField("breakfastUrl", e.target.value)}
-                  placeholder="https://...mp3"
-                />
               </div>
 
               <div className="space-y-1">
                 <Label className="text-xs">
-                  Духовный завтрак (из каталога музыки)
+                  Духовный завтрак (из библиотеки завтраков)
                 </Label>
                 <Select
-                  value={data.audioId}
-                  onValueChange={(val) => updateField("audioId", val as string)}
+                  value={
+                    breakfasts.find((b) => b.audioUrl === data.breakfastUrl)
+                      ?.id ?? ""
+                  }
+                  onValueChange={(val) => {
+                    if (!val) {
+                      setData((prev) => ({
+                        ...prev,
+                        breakfastTitle: "",
+                        breakfastUrl: "",
+                      }));
+                      return;
+                    }
+                    const b = breakfasts.find((x) => x.id === val);
+                    if (b)
+                      setData((prev) => ({
+                        ...prev,
+                        breakfastTitle: b.title,
+                        breakfastUrl: b.audioUrl,
+                      }));
+                  }}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Выберите трек..." />
+                    <SelectValue placeholder="Выберите завтрак..." />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Не выбрано</SelectItem>
-                    {musicTracks.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.title}
-                        {t.artist ? ` — ${t.artist}` : ""}
+                    {breakfasts.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.title || b.id}
                       </SelectItem>
                     ))}
                   </SelectContent>

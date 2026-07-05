@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import { collection, getCountFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Headphones, Music, Sparkles, Brain } from "lucide-react";
+import { Headphones, Sparkles, Brain } from "lucide-react";
 import Link from "next/link";
 
 interface Counts {
   meditations: number;
-  music: number;
   affirmations: number;
   programs: number;
 }
@@ -17,7 +16,6 @@ interface Counts {
 export default function DashboardPage() {
   const [counts, setCounts] = useState<Counts>({
     meditations: 0,
-    music: 0,
     affirmations: 0,
     programs: 0,
   });
@@ -25,15 +23,13 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [med, mus, aff, prog] = await Promise.all([
+        const [med, aff, prog] = await Promise.all([
           getCountFromServer(collection(db, "meditations")),
-          getCountFromServer(collection(db, "musicTracks")),
           getCountFromServer(collection(db, "affirmations")),
           getCountFromServer(collection(db, "programs")),
         ]);
         setCounts({
           meditations: med.data().count,
-          music: mus.data().count,
           affirmations: aff.data().count,
           programs: prog.data().count,
         });
@@ -50,12 +46,6 @@ export default function DashboardPage() {
       count: counts.meditations,
       icon: Headphones,
       href: "/meditations",
-    },
-    {
-      title: "Музыка",
-      count: counts.music,
-      icon: Music,
-      href: "/music",
     },
     {
       title: "Аффирмации",

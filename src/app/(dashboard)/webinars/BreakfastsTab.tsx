@@ -19,6 +19,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useLifeAreas, NO_AREA } from "@/lib/use-life-areas";
 import { ImageUploadField } from "@/components/image-upload-field";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 
@@ -46,6 +54,7 @@ export function BreakfastsTab() {
   const [items, setItems] = useState<BreakfastDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const { areaKeys, areaLabel } = useLifeAreas();
 
   useEffect(() => {
     (async () => {
@@ -101,6 +110,7 @@ export function BreakfastsTab() {
       audioUrl: "",
       coverUrl: "",
       sortOrder: items.length,
+      area: "",
     };
     await setDoc(doc(db, "breakfasts", id), empty);
     setItems((prev) => [...prev, { id, ...empty }]);
@@ -141,6 +151,27 @@ export function BreakfastsTab() {
                   onChange={(url) => patch(b.id, { coverUrl: url })}
                   folder="stories/breakfasts"
                 />
+                <div className="space-y-1">
+                  <Label className="text-xs">Сфера жизни</Label>
+                  <Select
+                    value={b.area || NO_AREA}
+                    onValueChange={(v) =>
+                      patch(b.id, { area: !v || v === NO_AREA ? "" : v })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_AREA}>Без сферы</SelectItem>
+                      {areaKeys.map((a) => (
+                        <SelectItem key={a} value={a}>
+                          {areaLabel(a)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Текст на сторис</Label>

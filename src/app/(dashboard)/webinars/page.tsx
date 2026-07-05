@@ -13,6 +13,14 @@ import {
 import { db } from "@/lib/firebase";
 import { uploadFile } from "@/lib/storage";
 import { WebinarDoc } from "@/lib/types";
+import { useLifeAreas, NO_AREA } from "@/lib/use-life-areas";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,6 +60,7 @@ const emptyWebinar: Omit<WebinarDoc, "id"> = {
   sortOrder: 0,
   popular: false,
   coverColor: "",
+  area: "",
 };
 
 function extractDominantColor(file: File): Promise<string> {
@@ -82,6 +91,7 @@ export default function WebinarsPage() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const { areaKeys, areaLabel } = useLifeAreas();
 
   useEffect(() => {
     const q = query(collection(db, "webinars"), orderBy("sortOrder"));
@@ -112,6 +122,7 @@ export default function WebinarsPage() {
       sortOrder: w.sortOrder,
       popular: w.popular || false,
       coverColor: w.coverColor || "",
+      area: w.area || "",
     });
     setAudioFile(null);
     setCoverFile(null);
@@ -151,6 +162,7 @@ export default function WebinarsPage() {
         coverColor,
         sortOrder: form.sortOrder,
         popular: form.popular || false,
+        area: form.area || "",
       });
 
       setDialogOpen(false);
@@ -188,6 +200,7 @@ export default function WebinarsPage() {
           <TableRow>
             <TableHead className="w-16">Обложка</TableHead>
             <TableHead>Название</TableHead>
+            <TableHead>Сфера</TableHead>
             <TableHead>Длительность</TableHead>
             <TableHead>Аудио</TableHead>
             <TableHead className="w-24">Действия</TableHead>
@@ -215,6 +228,13 @@ export default function WebinarsPage() {
                   </Badge>
                 )}
               </TableCell>
+              <TableCell>
+                {w.area ? (
+                  <Badge variant="secondary">{areaLabel(w.area)}</Badge>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </TableCell>
               <TableCell>{formatDuration(w.durationSeconds)}</TableCell>
               <TableCell className="text-xs text-muted-foreground truncate max-w-32">
                 {w.fileName || "—"}
@@ -238,7 +258,7 @@ export default function WebinarsPage() {
           {webinars.length === 0 && (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className="text-center text-muted-foreground py-8"
               >
                 Нет вебинаров. Нажмите «Добавить», чтобы загрузить первый.
@@ -276,6 +296,27 @@ export default function WebinarsPage() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Сфера жизни</Label>
+              <Select
+                value={form.area || NO_AREA}
+                onValueChange={(v) =>
+                  setForm({ ...form, area: !v || v === NO_AREA ? "" : v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_AREA}>Без сферы</SelectItem>
+                  {areaKeys.map((a) => (
+                    <SelectItem key={a} value={a}>
+                      {areaLabel(a)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Длительность (секунды)</Label>

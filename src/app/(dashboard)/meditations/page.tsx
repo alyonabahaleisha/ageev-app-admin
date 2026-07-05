@@ -12,7 +12,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { uploadFile } from "@/lib/storage";
-import { MeditationDoc, LIFE_AREAS, AREA_LABELS, LifeArea } from "@/lib/types";
+import { MeditationDoc, LifeArea } from "@/lib/types";
+import { useLifeAreas } from "@/lib/use-life-areas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,6 +84,7 @@ function extractDominantColor(file: File): Promise<string> {
 
 export default function MeditationsPage() {
   const [meditations, setMeditations] = useState<MeditationDoc[]>([]);
+  const { areaKeys, areaLabel } = useLifeAreas();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyMeditation);
@@ -210,12 +212,12 @@ export default function MeditationsPage() {
               <TableCell className="font-medium">
                 {med.title}
                 {med.popular && (
-                  <Badge className="ml-2" variant="default">Популярная</Badge>
+                  <Badge className="ml-2" variant="default">Рекомендованная</Badge>
                 )}
               </TableCell>
               <TableCell>
                 <Badge variant="secondary">
-                  {AREA_LABELS[med.area] || med.area}
+                  {areaLabel(med.area)}
                 </Badge>
               </TableCell>
               <TableCell>{formatDuration(med.durationSeconds)}</TableCell>
@@ -289,9 +291,9 @@ export default function MeditationsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {LIFE_AREAS.map((a) => (
+                  {areaKeys.map((a) => (
                     <SelectItem key={a} value={a}>
-                      {AREA_LABELS[a]}
+                      {areaLabel(a)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -361,7 +363,7 @@ export default function MeditationsPage() {
                 onChange={(e) => setForm({ ...form, popular: e.target.checked })}
                 className="size-4"
               />
-              <Label htmlFor="popular">Популярная медитация</Label>
+              <Label htmlFor="popular">Рекомендованная медитация</Label>
             </div>
             <Button onClick={handleSave} className="w-full" disabled={saving}>
               <Upload className="size-4 mr-2" />
