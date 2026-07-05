@@ -73,6 +73,14 @@ const DEFAULTS: Record<string, string> = {
   filter_short: "Короткие",
   filter_long: "Длинные",
 
+  // Поиск
+  search_title: "Поиск",
+  search_placeholder: "Что хотите найти?",
+  search_results: "Результаты поиска",
+  search_empty_title: "Ничего не найдено",
+  search_empty_subtitle: "Попробуйте изменить запрос или выбрать категорию ниже.",
+  search_quick_categories: "Быстрые категории",
+
   // Медитации
   meditations_title: "Медитации",
 
