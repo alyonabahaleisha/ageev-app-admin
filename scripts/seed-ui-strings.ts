@@ -110,6 +110,7 @@ const DEFAULTS: Record<string, string> = {
   clubs_city_few: "города",
   clubs_city_many: "городов",
   clubs_search_placeholder: "Найти город",
+  clubs_search_empty: "Ничего не найдено",
   clubs_map_title: "Наши клубы",
   clubs_map_telegram_link: "Перейти в Telegram",
 
