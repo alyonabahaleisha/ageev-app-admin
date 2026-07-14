@@ -21,6 +21,7 @@ import {
   WebinarDoc,
   BreakfastDoc,
 } from "@/lib/types";
+import { itemAreas } from "@/lib/use-life-areas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,7 +76,7 @@ function slugify(label: string): string {
     .replace(/^_+|_+$/g, "");
 }
 
-type ContentItem = { id: string; title: string; area?: string };
+type ContentItem = { id: string; title: string; area?: string; areas?: string[] };
 
 const emptyNewArea = { key: "", label: "", emoji: "", color: "#888888" };
 
@@ -180,12 +181,29 @@ export default function LifeAreasPage() {
     }
   }
 
-  async function assignItem(col: string, id: string, areaKey: string) {
-    await updateDoc(doc(db, col, id), { area: areaKey });
+  // Контент может принадлежать нескольким сферам: добавление дописывает сферу
+  // в `areas`, удаление вычёркивает только её. Легаси-поле `area` держим
+  // равным areas[0] для старых сборок приложения.
+  function itemById(col: string, id: string): ContentItem | undefined {
+    const list =
+      col === "meditations"
+        ? (meditations as ContentItem[])
+        : col === "webinars"
+        ? (webinars as ContentItem[])
+        : (breakfasts as ContentItem[]);
+    return list.find((i) => i.id === id);
   }
 
-  async function unassignItem(col: string, id: string) {
-    await updateDoc(doc(db, col, id), { area: "" });
+  async function assignItem(col: string, id: string, areaKey: string) {
+    const item = itemById(col, id);
+    const next = [...new Set([...itemAreas(item ?? {}), areaKey])];
+    await updateDoc(doc(db, col, id), { areas: next, area: next[0] ?? "" });
+  }
+
+  async function unassignItem(col: string, id: string, areaKey: string) {
+    const item = itemById(col, id);
+    const next = itemAreas(item ?? {}).filter((a) => a !== areaKey);
+    await updateDoc(doc(db, col, id), { areas: next, area: next[0] ?? "" });
   }
 
   function contentFor(key: string) {
@@ -210,8 +228,8 @@ export default function LifeAreasPage() {
       },
     ].map((section) => ({
       ...section,
-      assigned: section.items.filter((i) => i.area === key),
-      available: section.items.filter((i) => i.area !== key),
+      assigned: section.items.filter((i) => itemAreas(i).includes(key)),
+      available: section.items.filter((i) => !itemAreas(i).includes(key)),
     }));
   }
 
@@ -332,7 +350,7 @@ export default function LifeAreasPage() {
                                 >
                                   <span className="truncate">{item.title}</span>
                                   <button
-                                    onClick={() => unassignItem(s.col, item.id)}
+                                    onClick={() => unassignItem(s.col, item.id, key)}
                                     className="text-muted-foreground hover:text-destructive shrink-0"
                                     title="Убрать из сферы"
                                   >
@@ -354,12 +372,17 @@ export default function LifeAreasPage() {
                                 <SelectValue placeholder="+ Добавить..." />
                               </SelectTrigger>
                               <SelectContent>
-                                {s.available.map((item) => (
-                                  <SelectItem key={item.id} value={item.id}>
-                                    {item.title}
-                                    {item.area ? ` — сейчас: ${areaLabel(item.area)}` : ""}
-                                  </SelectItem>
-                                ))}
+                                {s.available.map((item) => {
+                                  const cur = itemAreas(item);
+                                  return (
+                                    <SelectItem key={item.id} value={item.id}>
+                                      {item.title}
+                                      {cur.length
+                                        ? ` — сейчас: ${cur.map(areaLabel).join(", ")}`
+                                        : ""}
+                                    </SelectItem>
+                                  );
+                                })}
                                 {s.available.length === 0 && (
                                   <div className="px-2 py-1.5 text-sm text-muted-foreground">
                                     Нет доступных

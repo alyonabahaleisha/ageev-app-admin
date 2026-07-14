@@ -13,7 +13,7 @@ import {
 import { db } from "@/lib/firebase";
 import { uploadFile } from "@/lib/storage";
 import { WebinarDoc } from "@/lib/types";
-import { useLifeAreas, NO_AREA } from "@/lib/use-life-areas";
+import { itemAreas, useLifeAreas } from "@/lib/use-life-areas";
 import {
   Select,
   SelectContent,
@@ -61,6 +61,7 @@ const emptyWebinar: Omit<WebinarDoc, "id"> = {
   popular: false,
   coverColor: "",
   area: "",
+  areas: [] as string[],
 };
 
 function extractDominantColor(file: File): Promise<string> {
@@ -123,6 +124,7 @@ export default function WebinarsPage() {
       popular: w.popular || false,
       coverColor: w.coverColor || "",
       area: w.area || "",
+      areas: itemAreas(w),
     });
     setAudioFile(null);
     setCoverFile(null);
@@ -162,7 +164,9 @@ export default function WebinarsPage() {
         coverColor,
         sortOrder: form.sortOrder,
         popular: form.popular || false,
-        area: form.area || "",
+        // Легаси-поле для старых сборок приложения — всегда areas[0].
+        area: (form.areas ?? [])[0] ?? "",
+        areas: form.areas ?? [],
       });
 
       setDialogOpen(false);
@@ -229,8 +233,10 @@ export default function WebinarsPage() {
                 )}
               </TableCell>
               <TableCell>
-                {w.area ? (
-                  <Badge variant="secondary">{areaLabel(w.area)}</Badge>
+                {itemAreas(w).length ? (
+                  <Badge variant="secondary">
+                    {itemAreas(w).map(areaLabel).join(", ")}
+                  </Badge>
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
@@ -298,25 +304,28 @@ export default function WebinarsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Сфера жизни</Label>
-              <Select
-                value={form.area || NO_AREA}
-                onValueChange={(v) =>
-                  setForm({ ...form, area: !v || v === NO_AREA ? "" : v })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_AREA}>Без сферы</SelectItem>
-                  {areaKeys.map((a) => (
-                    <SelectItem key={a} value={a}>
+              <Label>Сферы жизни (можно несколько)</Label>
+              <div className="flex flex-wrap gap-2">
+                {areaKeys.map((a) => {
+                  const selected = (form.areas ?? []).includes(a);
+                  return (
+                    <Badge
+                      key={a}
+                      variant={selected ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        const cur = form.areas ?? [];
+                        const next = selected
+                          ? cur.filter((x) => x !== a)
+                          : [...cur, a];
+                        setForm({ ...form, areas: next, area: next[0] ?? "" });
+                      }}
+                    >
                       {areaLabel(a)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Длительность (секунды)</Label>

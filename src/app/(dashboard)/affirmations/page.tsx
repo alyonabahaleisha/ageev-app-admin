@@ -3,16 +3,26 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { LIFE_AREAS, AREA_LABELS, LifeArea } from "@/lib/types";
+import { useLifeAreas } from "@/lib/use-life-areas";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Save, Plus, X } from "lucide-react";
+import { Save, Plus, X, FolderInput } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function AffirmationsPage() {
-  const [selectedArea, setSelectedArea] = useState<LifeArea>("money");
+  // Сферы и их названия берём из коллекции lifeAreas (раздел «Сферы жизни»),
+  // чтобы переименования сфер сразу отражались и здесь.
+  const { areaKeys, areaLabel } = useLifeAreas();
+  const [selectedArea, setSelectedArea] = useState<string>("money");
   const [texts, setTexts] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -49,6 +59,35 @@ export default function AffirmationsPage() {
     setTexts(texts.filter((_, i) => i !== index));
   }
 
+  /**
+   * Перенос аффирмации в другую сферу: текст дописывается в документ целевой
+   * сферы и убирается из текущей. Обе записи происходят сразу (вместе с
+   * несохранёнными правками текущей сферы), кнопка «Сохранить» не нужна.
+   */
+  async function moveText(index: number, targetArea: string) {
+    const text = texts[index]?.trim();
+    if (!text || targetArea === selectedArea) return;
+    const nextTexts = texts
+      .filter((_, i) => i !== index)
+      .filter((t) => t.trim());
+    setSaving(true);
+    try {
+      const targetSnap = await getDoc(doc(db, "affirmations", targetArea));
+      const targetTexts: string[] = targetSnap.exists()
+        ? targetSnap.data().texts || []
+        : [];
+      await Promise.all([
+        setDoc(doc(db, "affirmations", selectedArea), { texts: nextTexts }),
+        setDoc(doc(db, "affirmations", targetArea), {
+          texts: [...targetTexts, text],
+        }),
+      ]);
+      setTexts(nextTexts);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     try {
@@ -71,14 +110,14 @@ export default function AffirmationsPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {LIFE_AREAS.map((area) => (
+        {areaKeys.map((area) => (
           <Badge
             key={area}
             variant={selectedArea === area ? "default" : "outline"}
             className="cursor-pointer"
             onClick={() => setSelectedArea(area)}
           >
-            {AREA_LABELS[area]}
+            {areaLabel(area)}
           </Badge>
         ))}
       </div>
@@ -86,7 +125,7 @@ export default function AffirmationsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>{AREA_LABELS[selectedArea]}</span>
+            <span>{areaLabel(selectedArea)}</span>
             <span className="text-sm font-normal text-muted-foreground">
               {texts.length} аффирмаций
             </span>
@@ -108,6 +147,23 @@ export default function AffirmationsPage() {
                     rows={2}
                     className="flex-1"
                   />
+                  <Select value="" onValueChange={(v) => v && moveText(i, v)}>
+                    <SelectTrigger
+                      className="w-9 shrink-0 px-2 [&>svg:last-child]:hidden"
+                      title="Перенести в другую сферу"
+                    >
+                      <FolderInput className="size-4" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {areaKeys
+                        .filter((a) => a !== selectedArea)
+                        .map((a) => (
+                          <SelectItem key={a} value={a}>
+                            → {areaLabel(a)}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant="ghost"
                     size="icon"

@@ -13,7 +13,7 @@ import {
 import { db } from "@/lib/firebase";
 import { uploadFile } from "@/lib/storage";
 import { MeditationDoc, LifeArea } from "@/lib/types";
-import { useLifeAreas } from "@/lib/use-life-areas";
+import { itemAreas, useLifeAreas } from "@/lib/use-life-areas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,6 +52,7 @@ const emptyMeditation: Omit<MeditationDoc, "id"> = {
   title: "",
   description: "",
   area: "money",
+  areas: ["money"],
   fileName: "",
   durationSeconds: 0,
   audioUrl: "",
@@ -115,6 +116,7 @@ export default function MeditationsPage() {
       title: med.title,
       description: med.description,
       area: med.area,
+      areas: itemAreas(med),
       fileName: med.fileName,
       durationSeconds: med.durationSeconds,
       audioUrl: med.audioUrl,
@@ -149,10 +151,13 @@ export default function MeditationsPage() {
       }
 
       const id = editingId || form.title.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+      const areas = form.areas && form.areas.length ? form.areas : [];
       await setDoc(doc(db, "meditations", id), {
         title: form.title,
         description: form.description,
-        area: form.area,
+        // Легаси-поле для старых сборок приложения — всегда areas[0].
+        area: (areas[0] ?? "") as MeditationDoc["area"],
+        areas,
         fileName,
         durationSeconds: form.durationSeconds,
         audioUrl,
@@ -217,7 +222,7 @@ export default function MeditationsPage() {
               </TableCell>
               <TableCell>
                 <Badge variant="secondary">
-                  {areaLabel(med.area)}
+                  {itemAreas(med).map(areaLabel).join(", ") || "—"}
                 </Badge>
               </TableCell>
               <TableCell>{formatDuration(med.durationSeconds)}</TableCell>
@@ -280,24 +285,32 @@ export default function MeditationsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Сфера жизни</Label>
-              <Select
-                value={form.area}
-                onValueChange={(v) =>
-                  setForm({ ...form, area: v as LifeArea })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {areaKeys.map((a) => (
-                    <SelectItem key={a} value={a}>
+              <Label>Сферы жизни (можно несколько)</Label>
+              <div className="flex flex-wrap gap-2">
+                {areaKeys.map((a) => {
+                  const selected = (form.areas ?? []).includes(a);
+                  return (
+                    <Badge
+                      key={a}
+                      variant={selected ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        const cur = form.areas ?? [];
+                        const next = selected
+                          ? cur.filter((x) => x !== a)
+                          : [...cur, a];
+                        setForm({
+                          ...form,
+                          areas: next,
+                          area: (next[0] ?? "") as LifeArea,
+                        });
+                      }}
+                    >
                       {areaLabel(a)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Длительность (секунды)</Label>

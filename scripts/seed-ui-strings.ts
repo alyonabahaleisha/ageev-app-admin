@@ -177,6 +177,124 @@ const DEFAULTS: Record<string, string> = {
   story_start_body:
     "Начните путь к лучшей версии себя – через практики, осознанность и заботу о своём внутреннем состоянии.",
   story_start_cta: "Все практики",
+  // ── Добавлено автоматически (недостающие ключи из приложения) ──
+
+  // Аккаунт
+  account_delete_cancel: "Отмена",
+  account_delete_confirm: "Удалить аккаунт",
+  account_delete_subtitle: "Ваши данные будут безвозвратно удалены.",
+  account_delete_title: "Вы уверены, что хотите удалить аккаунт?",
+  account_deleting: "Удаляем…",
+  account_error: "Ошибка",
+  account_signout: "Выйти из аккаунта",
+  account_title: "Аккаунт",
+
+  // Авторизация
+  auth_continue: "Продолжить",
+  auth_email_placeholder: "Email",
+  auth_error_no_email: "Введите email",
+  auth_error_no_password: "Введите пароль",
+  auth_forgot: "Забыли пароль? ",
+  auth_forgot_link: "Восстановить",
+  auth_have_account: "Уже есть аккаунт? ",
+  auth_no_account: "Нет аккаунта? ",
+  auth_or: "Или",
+  auth_password_placeholder: "Пароль",
+  auth_privacy_link: "Политикой конфиденциальности",
+  auth_privacy_url: "",
+  auth_reset_done: "Готово",
+  auth_reset_sent: "Мы отправили письмо со ссылкой для восстановления пароля на",
+  auth_reset_title: "Восстановить пароль",
+  auth_signin_link: "Войти",
+  auth_signin_title: "Войти",
+  auth_signup_link: "Зарегистрироваться",
+  auth_signup_title: "Регистрация",
+  auth_skip: "Пропустить",
+  auth_social_soon_text: "",
+  auth_social_soon_title: "Скоро",
+  auth_terms_and: "и",
+  auth_terms_link: "Условиями использования",
+  auth_terms_prefix: "Продолжая, вы соглашаетесь с",
+  auth_terms_url: "",
+
+  // Избранное
+  favorites_affirmations: "Аффирмации",
+  favorites_breakfasts: "Духовные завтраки",
+  favorites_empty_button: "Перейти к практикам",
+  favorites_empty_subtitle: "Добавляйте медитации, аффирмации и материалы, к которым хочется возвращаться.",
+  favorites_empty_title: "Пока ничего не сохранено",
+  favorites_meditations: "Медитации",
+  favorites_see_all: "Посмотреть все",
+  favorites_title: "Избранное",
+  favorites_webinars: "Вебинары",
+
+  // Главная (новые)
+  home_affirmation_more: "Читать полностью",
+
+  // Мини-плеер
+  miniplayer_title: "Продолжить практику",
+
+  // Плеер (новые)
+  player_kind_breakfast: "Духовный завтрак",
+  player_kind_meditation: "Медитация",
+  player_kind_webinar: "Вебинар",
+  player_saved_favorites: "Избранное",
+  player_saved_sub: "Смотреть в разделе",
+  player_saved_title: "Сохранено",
+
+  // Профиль
+  profile_courses_url: "https://mikhail-ageev.ru/treningi",
+  profile_donation_url: "https://mikhail-ageev.ru/donate",
+  profile_guest_subtitle: "Сохраните практики и прогресс",
+  profile_guest_title: "Вы не вошли в аккаунт",
+  profile_signin_button: "Войти / создать аккаунт",
+  profile_social_title: "Мы на связи",
+  profile_support_button: "Связаться с поддержкой",
+  profile_support_url: "",
+  profile_tab_donation: "Донейшн",
+  profile_tab_events: "Курсы и события",
+  profile_tab_favorites: "Избранное",
+  profile_tab_settings: "Настройки",
+  profile_title: "Профиль",
+  profile_welcome: "Добро пожаловать,",
+
+  // Настройки
+  settings_angel_label: "Показывать на главном экране",
+  settings_angel_title: "Ангел-помощник",
+  settings_interface_title: "Интерфейс",
+  settings_notifications_title: "Уведомления",
+  settings_reminder_day: "День",
+  settings_reminder_evening: "Вечер",
+  settings_reminder_morning: "Утро",
+  settings_reminders_label: "Напоминания о практике",
+  settings_reminders_when: "Когда напоминать:",
+  settings_text_large: "Крупный",
+  settings_text_size: "Размер текста",
+  settings_text_small: "Маленький",
+  settings_text_standard: "Стандарт",
+  settings_title: "Настройки",
+
+  // Шеринг
+  share_action_copy: "Скопировать текст",
+  share_action_more: "Ещё",
+  share_action_save: "Сохранить изображение",
+  share_copied: "Текст скопирован",
+  share_save_error: "Не удалось сохранить",
+  share_saved: "Сохранено в галерею",
+  share_title: "Поделиться",
+
+  // Профиль — соцсети (ссылки)
+  social_instagram_url: "",
+  social_telegram_url: "",
+  social_youtube_url: "",
+
+  // Приветственный экран
+  welcome_registered: "Уже зарегистрированы? ",
+  welcome_signin: "Войти",
+  welcome_start: "Начать",
+  welcome_subtitle: "Пространство для спокойствия и внутреннего баланса.",
+  welcome_title: "Добро пожаловать",
+
 };
 
 async function main() {

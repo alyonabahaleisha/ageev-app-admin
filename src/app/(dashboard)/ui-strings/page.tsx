@@ -20,6 +20,7 @@ import { Save, Plus, X, Search, ChevronDown, ChevronRight } from "lucide-react";
 // Screen groups, in app order. A key belongs to the first matching prefix.
 const GROUPS: { prefix: string; title: string }[] = [
   { prefix: "nav_", title: "Нижняя навигация" },
+  { prefix: "welcome_", title: "Приветственный экран" },
   { prefix: "home_", title: "Главная" },
   { prefix: "story_", title: "Сторис" },
   { prefix: "thinking_", title: "Мышление" },
@@ -28,9 +29,19 @@ const GROUPS: { prefix: string; title: string }[] = [
   { prefix: "meditations_", title: "Медитации" },
   { prefix: "affirmations_", title: "Аффирмации" },
   { prefix: "webinars_", title: "Вебинары" },
+  { prefix: "breakfasts_", title: "Духовные завтраки" },
   { prefix: "player_", title: "Плеер" },
+  { prefix: "miniplayer_", title: "Мини-плеер" },
+  { prefix: "search_", title: "Поиск" },
   { prefix: "clubs_", title: "Клуб" },
   { prefix: "school_", title: "О школе" },
+  { prefix: "profile_", title: "Профиль" },
+  { prefix: "social_", title: "Профиль — соцсети (ссылки)" },
+  { prefix: "favorites_", title: "Избранное" },
+  { prefix: "settings_", title: "Настройки" },
+  { prefix: "auth_", title: "Авторизация" },
+  { prefix: "account_", title: "Аккаунт" },
+  { prefix: "share_", title: "Шеринг" },
 ];
 
 const OTHER_GROUP = "Прочее (старые ключи)";

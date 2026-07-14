@@ -8,6 +8,15 @@ import { LIFE_AREAS, AREA_LABELS, LifeArea, LifeAreaDoc } from "./types";
 /** Sentinel for "no area" in selects (Radix forbids empty-string item values). */
 export const NO_AREA = "__none__";
 
+/**
+ * Effective life areas of a content item: the multi `areas` array when set,
+ * otherwise the legacy single `area`. Writers must keep `area` = areas[0].
+ */
+export function itemAreas(i: { area?: string; areas?: string[] }): string[] {
+  if (i.areas && i.areas.length) return i.areas;
+  return i.area ? [i.area] : [];
+}
+
 /** Live list of life-area keys (built-in ∪ Firestore) with display labels. */
 export function useLifeAreas() {
   const [areaDocs, setAreaDocs] = useState<Record<string, LifeAreaDoc>>({});

@@ -19,16 +19,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useLifeAreas, NO_AREA } from "@/lib/use-life-areas";
+import { itemAreas, useLifeAreas } from "@/lib/use-life-areas";
 import { ImageUploadField } from "@/components/image-upload-field";
 import { Plus, Trash2, Loader2 } from "lucide-react";
+
+type Draft = Partial<Omit<BreakfastDoc, "id">>;
 
 function formatDuration(seconds: number) {
   if (!seconds) return "—";
@@ -54,6 +49,11 @@ export function BreakfastsTab() {
   const [items, setItems] = useState<BreakfastDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  // Все правки карточки копятся в черновике и попадают в Firestore только по
+  // кнопке «Сохранить» (загруженные файлы сразу уходят в Storage, но ссылка
+  // на них тоже сохраняется в документ только по кнопке).
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const { areaKeys, areaLabel } = useLifeAreas();
 
   useEffect(() => {
@@ -66,18 +66,40 @@ export function BreakfastsTab() {
     })();
   }, []);
 
-  async function persist(b: BreakfastDoc) {
-    const { id, ...rest } = b;
-    await setDoc(doc(db, "breakfasts", id), rest);
+  function edit(id: string, changes: Draft) {
+    setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...changes } }));
   }
 
-  function patch(id: string, changes: Partial<BreakfastDoc>) {
-    setItems((prev) => {
-      const next = prev.map((b) => (b.id === id ? { ...b, ...changes } : b));
-      const target = next.find((b) => b.id === id);
-      if (target) persist(target);
-      return next;
-    });
+  /** Текущее (отображаемое) состояние карточки: документ + черновик. */
+  function view(b: BreakfastDoc): BreakfastDoc {
+    return { ...b, ...drafts[b.id] };
+  }
+
+  function isDirty(b: BreakfastDoc) {
+    const draft = drafts[b.id];
+    if (!draft) return false;
+    return (Object.keys(draft) as (keyof Draft)[]).some(
+      (k) => draft[k] !== b[k]
+    );
+  }
+
+  async function save(b: BreakfastDoc) {
+    setSavingId(b.id);
+    try {
+      const { id, ...rest } = view(b);
+      await setDoc(doc(db, "breakfasts", id), rest);
+      setItems((prev) => prev.map((x) => (x.id === id ? { id, ...rest } : x)));
+      setDrafts((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (err) {
+      console.error("Breakfast save failed", err);
+      alert("Не удалось сохранить");
+    } finally {
+      setSavingId(null);
+    }
   }
 
   async function handleAudio(id: string, file: File) {
@@ -87,7 +109,7 @@ export function BreakfastsTab() {
         uploadFile(`audio/breakfasts/${Date.now()}_${file.name}`, file),
         getAudioDuration(file),
       ]);
-      patch(id, {
+      edit(id, {
         audioUrl: url,
         fileName: file.name,
         durationSeconds: duration,
@@ -111,6 +133,7 @@ export function BreakfastsTab() {
       coverUrl: "",
       sortOrder: items.length,
       area: "",
+      areas: [] as string[],
     };
     await setDoc(doc(db, "breakfasts", id), empty);
     setItems((prev) => [...prev, { id, ...empty }]);
@@ -120,6 +143,11 @@ export function BreakfastsTab() {
     if (!confirm("Удалить завтрак?")) return;
     await deleteDoc(doc(db, "breakfasts", id));
     setItems((prev) => prev.filter((b) => b.id !== id));
+    setDrafts((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   }
 
   if (loading) return <p className="text-muted-foreground">Загрузка...</p>;
@@ -128,96 +156,112 @@ export function BreakfastsTab() {
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
         «Духовный завтрак» для второго сторис — аудио-практика (как медитация).
+        Изменения применяются по кнопке «Сохранить» на карточке.
       </p>
       <div className="space-y-3">
-        {items.map((b) => (
-          <Card key={b.id}>
-            <CardContent className="p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+        {items.map((b) => {
+          const v = view(b);
+          const dirty = isDirty(b);
+          return (
+            <Card key={b.id}>
+              <CardContent className="p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Название</Label>
+                    <Input
+                      value={v.title}
+                      onChange={(e) => edit(b.id, { title: e.target.value })}
+                      placeholder="Духовный завтрак"
+                    />
+                  </div>
+                  <ImageUploadField
+                    label="Фон (обложка)"
+                    value={v.coverUrl}
+                    onChange={(url) => edit(b.id, { coverUrl: url })}
+                    folder="stories/breakfasts"
+                  />
+                  <div className="space-y-1">
+                    <Label className="text-xs">Сферы жизни (можно несколько)</Label>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {areaKeys.map((a) => {
+                        const selected = itemAreas(v).includes(a);
+                        return (
+                          <Badge
+                            key={a}
+                            variant={selected ? "default" : "outline"}
+                            className="cursor-pointer"
+                            onClick={() => {
+                              const cur = itemAreas(v);
+                              const next = selected
+                                ? cur.filter((x) => x !== a)
+                                : [...cur, a];
+                              edit(b.id, { areas: next, area: next[0] ?? "" });
+                            }}
+                          >
+                            {areaLabel(a)}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Название</Label>
-                  <Input
-                    defaultValue={b.title}
-                    onBlur={(e) =>
-                      e.target.value !== b.title &&
-                      patch(b.id, { title: e.target.value })
+                  <Label className="text-xs">Текст на сторис</Label>
+                  <Textarea
+                    value={v.description}
+                    rows={2}
+                    onChange={(e) =>
+                      edit(b.id, { description: e.target.value })
                     }
-                    placeholder="Духовный завтрак"
+                    placeholder="То, как вы определяете себя в начале дня... Кто ты сегодня?"
                   />
                 </div>
-                <ImageUploadField
-                  label="Фон (обложка)"
-                  value={b.coverUrl}
-                  onChange={(url) => patch(b.id, { coverUrl: url })}
-                  folder="stories/breakfasts"
-                />
                 <div className="space-y-1">
-                  <Label className="text-xs">Сфера жизни</Label>
-                  <Select
-                    value={b.area || NO_AREA}
-                    onValueChange={(v) =>
-                      patch(b.id, { area: !v || v === NO_AREA ? "" : v })
-                    }
+                  <Label className="text-xs">Аудио</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="file"
+                      accept="audio/*"
+                      className="max-w-xs"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleAudio(b.id, f);
+                      }}
+                    />
+                    {uploadingId === b.id ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : v.audioUrl ? (
+                      <Badge variant="outline">
+                        Загружено · {formatDuration(v.durationSeconds)}
+                      </Badge>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => removeItem(b.id)}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NO_AREA}>Без сферы</SelectItem>
-                      {areaKeys.map((a) => (
-                        <SelectItem key={a} value={a}>
-                          {areaLabel(a)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <Trash2 className="size-4 mr-1" />
+                    Удалить
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={!dirty || savingId === b.id}
+                    onClick={() => save(b)}
+                  >
+                    {savingId === b.id ? (
+                      <Loader2 className="size-4 mr-1 animate-spin" />
+                    ) : null}
+                    Сохранить
+                  </Button>
                 </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Текст на сторис</Label>
-                <Textarea
-                  defaultValue={b.description}
-                  rows={2}
-                  onBlur={(e) =>
-                    e.target.value !== b.description &&
-                    patch(b.id, { description: e.target.value })
-                  }
-                  placeholder="То, как вы определяете себя в начале дня... Кто ты сегодня?"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Аудио</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="file"
-                    accept="audio/*"
-                    className="max-w-xs"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) handleAudio(b.id, f);
-                    }}
-                  />
-                  {uploadingId === b.id ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : b.audioUrl ? (
-                    <Badge variant="outline">
-                      Загружено · {formatDuration(b.durationSeconds)}
-                    </Badge>
-                  ) : null}
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive"
-                onClick={() => removeItem(b.id)}
-              >
-                <Trash2 className="size-4 mr-1" />
-                Удалить
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
       <Button variant="outline" onClick={addItem}>
         <Plus className="size-4 mr-2" />

@@ -24,7 +24,10 @@ export interface MeditationDoc {
   id: string;
   title: string;
   description: string;
+  /** Legacy single area — kept in sync with areas[0] for old app builds. */
   area: LifeArea;
+  /** Life areas this item belongs to (multi). */
+  areas?: string[];
   fileName: string;
   durationSeconds: number;
   audioUrl: string;
@@ -45,8 +48,10 @@ export interface WebinarDoc {
   sortOrder: number;
   popular?: boolean;
   coverColor?: string;
-  /** Optional life-area assignment (managed from the life-areas page). */
+  /** Legacy single area — kept in sync with areas[0] for old app builds. */
   area?: string;
+  /** Life areas this item belongs to (multi). */
+  areas?: string[];
 }
 
 export interface MusicTrackDoc {
@@ -114,8 +119,10 @@ export interface BreakfastDoc {
   /** Full-bleed background image for the story. */
   coverUrl: string;
   sortOrder: number;
-  /** Optional life-area assignment (managed from the life-areas page). */
+  /** Legacy single area — kept in sync with areas[0] for old app builds. */
   area?: string;
+  /** Life areas this item belongs to (multi). */
+  areas?: string[];
 }
 
 /** Reel 3: a daily affirmation with its own background. */
