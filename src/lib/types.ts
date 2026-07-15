@@ -83,6 +83,8 @@ export interface ClubDoc {
   city: string;
   leader: string;
   telegramUrl: string;
+  /** Ссылка на сообщество ВКонтакте (у клуба может быть одна или обе). */
+  vkUrl?: string;
   region: "abroad" | "russia";
   sortOrder: number;
 }

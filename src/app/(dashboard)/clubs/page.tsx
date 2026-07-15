@@ -62,6 +62,7 @@ const emptyClub: Omit<ClubDoc, "id"> = {
   city: "",
   leader: "",
   telegramUrl: "",
+  vkUrl: "",
   region: "abroad",
   sortOrder: 0,
 };
@@ -112,6 +113,7 @@ export default function ClubsPage() {
       city: club.city,
       leader: club.leader,
       telegramUrl: club.telegramUrl,
+      vkUrl: club.vkUrl || "",
       region: club.region,
       sortOrder: club.sortOrder,
     });
@@ -131,6 +133,7 @@ export default function ClubsPage() {
         city: form.city,
         leader: form.leader,
         telegramUrl: form.telegramUrl,
+        vkUrl: form.vkUrl || "",
         region: form.region,
         sortOrder: form.sortOrder,
       });
@@ -200,15 +203,29 @@ export default function ClubsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {club.telegramUrl ? (
-                        <a
-                          href={club.telegramUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="max-w-48 truncate text-xs text-muted-foreground block"
-                        >
-                          {club.telegramUrl}
-                        </a>
+                      {club.telegramUrl || club.vkUrl ? (
+                        <>
+                          {club.telegramUrl && (
+                            <a
+                              href={club.telegramUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="max-w-48 truncate text-xs text-muted-foreground block"
+                            >
+                              {club.telegramUrl}
+                            </a>
+                          )}
+                          {club.vkUrl && (
+                            <a
+                              href={club.vkUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="max-w-48 truncate text-xs text-muted-foreground block"
+                            >
+                              {club.vkUrl}
+                            </a>
+                          )}
+                        </>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -291,6 +308,16 @@ export default function ClubsPage() {
                 onChange={(e) =>
                   setForm({ ...form, telegramUrl: e.target.value })
                 }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="club-vk">ВКонтакте ссылка</Label>
+              <Input
+                id="club-vk"
+                type="url"
+                placeholder="https://vk.com/..."
+                value={form.vkUrl || ""}
+                onChange={(e) => setForm({ ...form, vkUrl: e.target.value })}
               />
             </div>
             <div className="space-y-2">

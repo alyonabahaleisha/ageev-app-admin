@@ -177,6 +177,12 @@ const DEFAULTS: Record<string, string> = {
   story_start_body:
     "Начните путь к лучшей версии себя – через практики, осознанность и заботу о своём внутреннем состоянии.",
   story_start_cta: "Все практики",
+  // ── Клубы: ссылки Telegram / ВКонтакте ──
+  clubs_map_vk_link: "Перейти во ВКонтакте",
+  clubs_link_telegram: "Telegram",
+  clubs_link_vk: "ВКонтакте",
+  clubs_choose_link: "Куда перейти?",
+
   // ── Добавлено автоматически (недостающие ключи из приложения) ──
 
   // Аккаунт
